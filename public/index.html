@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Node.js upload images</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <style>
+        div.preview-images>img {
+            width: 30%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-8 mt-3">
+                <h4>Node.js upload images - bezkoder.com</h4>
+
+                <form class="mt-4" action="/api/products" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <input type="file" name="file" id="input-files" class="form-control-file border" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="preview-images"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <button id="btnGetImg">Click to See saved image</button>
+                <div class="read-images"></div>
+            </div>
+        </div>
+    </div>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            let imagesPreview = function (input, placeToInsertImagePreview) {
+                if (input.files) {
+                    let filesAmount = input.files.length;
+                    for (i = 0; i < filesAmount; i++) {
+                        let reader = new FileReader();
+                        reader.onload = function (event) {
+                            $($.parseHTML("<img>"))
+                                .attr("src", event.target.result)
+                                .appendTo(placeToInsertImagePreview);
+                        };
+                        reader.readAsDataURL(input.files[i]);
+                    }
+                }
+            };
+            $("#input-files").on("change", function () {
+                imagesPreview(this, "div.preview-images");
+            });
+
+            $('#btnGetImg').click(async function () {
+
+                const image = await $.ajax({
+                    url: '/api/products',
+                    method: 'GET'
+                });
+                console.log('img', image);
+                function _arrayBufferToBase64(buffer) {
+                    var binary = '';
+                    var bytes = new Uint8Array(buffer);
+                    var len = bytes.byteLength;
+                    for (var i = 0; i < len; i++) {
+                        binary += String.fromCharCode(bytes[i]);
+                    }
+                    return window.btoa(binary);
+                }
+                for (let i = 0; i < image.length; i++) {
+                    const imgSrc = _arrayBufferToBase64(image[i].data.data);
+                    const card = `<div class="card" style="width: 18rem;">
+                <img class="card-img-top" src="data:image/png;base64,${imgSrc}" alt="Card image cap">
+                <div class="card-body">
+                <h5 class="card-title">${image[i].name}</h5>
+                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                <a href="#" class="btn btn-primary">Go somewhere</a>
+                </div>
+                </div>`;
+
+                    $('.read-images').append(card);
+                }
+
+
+
+
+
+            });
+        });
+    </script>
+</body>
+
+</html>
